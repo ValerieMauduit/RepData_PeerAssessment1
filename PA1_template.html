@@ -137,8 +137,12 @@ $(document).ready(function () {
 <li><em>interval</em>: Identifier for the 5-minute interval in which measurement was taken</li>
 </ul>
 <pre class="r"><code>nbl &lt;- nrow(x = activity)
-pna &lt;- mean(x = is.na(activity$steps)) * 100
-pna &lt;- round(pna, digits = 1)</code></pre>
+nbl</code></pre>
+<pre><code>## [1] 17568</code></pre>
+<pre class="r"><code>pna &lt;- mean(x = is.na(activity$steps)) * 100
+pna</code></pre>
+<pre><code>## [1] 13.11475</code></pre>
+<pre class="r"><code>pna &lt;- round(pna, digits = 1)</code></pre>
 <p>There are a total of 17568 observations in this dataset. But 13.1% of them are missing values.</p>
 </div>
 <div id="mean-total-number-of-steps-taken-per-day" class="section level2">
