@@ -26,9 +26,9 @@ activity <- read.csv("activity.csv")
 
 The variables included in this dataset are:
 
-* steps: Number of steps taking in a 5-minute interval  
-* date: The date on which the measurement was taken in YYYY-MM-DD format  
-* interval: Identifier for the 5-minute interval in which measurement was taken
+* *steps*: Number of steps taking in a 5-minute interval  
+* *date*: The date on which the measurement was taken in YYYY-MM-DD format  
+* *interval*: Identifier for the 5-minute interval in which measurement was taken
 
 ```{r, echo=TRUE}
 nbl <- nrow(x = activity)
@@ -53,7 +53,10 @@ print(mean.steps.per.day)
 median.steps.per.day <- 
     median(total.steps.per.day$daily_steps, na.rm = T)
 print(median.steps.per.day)
+```
 
+```{r, echo=TRUE, results= "hide"}
+png(filename = "figures/plot1.png")
 ggplot(total.steps.per.day, aes(daily_steps)) +
     geom_histogram(binwidth = 2000, na.rm = TRUE,
                    fill = "CadetBlue3", 
@@ -62,7 +65,10 @@ ggplot(total.steps.per.day, aes(daily_steps)) +
     geom_vline(xintercept = mean.steps.per.day, linetype = 2) +
     labs(x = "Steps in the day",
          title = "Repartition of total daily steps over two monthes")
+dev.off()
 ```
+
+![*Figure 1: histogram of daily steps*](figures/plot1.png) 
 
 The median total steps by day is `r median.steps.per.day`, represented as a solid vertical line in the histogram.  
 The mean total steps by day is `r mean.steps.per.day`, represented as a dashed vertical line in the histogram, but we don't see it because it is very close to the median value.
@@ -84,13 +90,21 @@ min2time <- function(x) {
     hms(paste(substr(y, 1, 2), substr(y, 3, 4), "00", sep = ":"))
 }
 steps.pattern <- mutate(steps.pattern, hour = min2time(interval))
+```
 
+```{r, echo=TRUE, results="hide"}
+png(filename = "figures/plot2.png")
 ggplot(steps.pattern, 
        aes(hour(hour) + minute(hour)/60, avg.steps)) +
     geom_line() +
     labs(x = "Hour of the day", y = "Average number of steps",
          title = 'Average daily activity pattern')
+dev.off()
+```
 
+![*Figure 2: Steps pattern in an average day*](figures/plot2.png) 
+
+```{r, echo = TRUE}
 max.avg.steps.interval <- 
     steps.pattern$hour[which.max(steps.pattern$avg.steps)]
 max.avg.steps.interval
@@ -106,11 +120,12 @@ There are a number of missing values which may introduce bias into some calculat
 nb.na <- sum(is.na(activity$steps))
 nb.na
 pc.na <- round(mean(is.na(activity$steps)) * 100, digits = 1)
+pc.na
 ```
 
 There are `r nb.na` N.A. values in the dataset, i.e. `r pc.na`% of the measured values. How are the filled?
 
-We start by a look at a dayli filling pattern of N.A. values:
+We start by a look at a time-in-the-day filling pattern of N.A. values:
 
 ```{r, echo=TRUE}
 steps.pattern2 <-
@@ -121,7 +136,7 @@ min(steps.pattern2$nb.na)
 max(steps.pattern2$nb.na)
 ```
 
-There are exactly 8 missing values each day. Is the a 5-min interval filling pattern of N.A. values?
+There are exactly 8 missing values for each min-interval. Are there on the same days?
 
 ```{r, echo=TRUE}
 steps.pattern3 <-
@@ -132,7 +147,7 @@ min(steps.pattern3$nb.na)
 max(steps.pattern3$nb.na)
 ```
 
-There is at least one day fully missing.
+There is at least one day fully missing, as 288 is the number of 5-min intervals in 24h.
 
 ```{r, echo=TRUE}
 unique(steps.pattern3$nb.na)
@@ -140,11 +155,18 @@ unique(steps.pattern3$nb.na)
 
 We see that even a day is full of measurements, or there are no values. So we look after empty days:
 
-```{r, echo=TRUE}
+```{r, echo=TRUE, results="hide"}
+png(filename = "figures/plot3.png")
 ggplot(steps.pattern3, aes(x = date, y = nb.na)) +
     geom_bar(stat = "identity") +
     scale_x_discrete(breaks = steps.pattern3$date[seq(1, 61, by = 7)]) +
     theme(axis.text.x = element_text(angle = 90))
+dev.off()
+```
+
+![*Figure 3: Days without measurments*](figures/plot3.png) 
+
+```{r, echo=TRUE}
 dates.na <- steps.pattern3$date[steps.pattern3$nb.na == 288]
 dates.na
 ```
@@ -167,7 +189,10 @@ mean.steps.per.day.new <- mean(total.steps.per.day.new$daily_steps)
 print(mean.steps.per.day.new)
 median.steps.per.day.new <- median(total.steps.per.day.new$daily_steps)
 print(median.steps.per.day.new)
+```
 
+```{r, echo=TRUE, results="hide"}
+png(filename = "figures/plot4.png")
 ggplot(total.steps.per.day.new, aes(daily_steps)) +
     geom_histogram(binwidth = 2000, na.rm = TRUE,
                    fill = "CadetBlue3", 
@@ -176,8 +201,10 @@ ggplot(total.steps.per.day.new, aes(daily_steps)) +
     geom_vline(xintercept = mean.steps.per.day.new, linetype = 2) +
     labs(x = "Steps in the day",
          title = "Repartition of total daily steps over two monthes")
-
+dev.off()
 ```
+
+![*Figure 4: Steps in an average day, with after filling missing data*](figures/plot4.png) 
 
 Median value changed due to filling of missing values.
 
@@ -200,12 +227,18 @@ steps.pattern.week <-
     activity.full %>% 
     group_by(nb.min, day.type) %>% 
     summarize(avg.steps = mean(steps))
+```
 
+```{r, echo=TRUE, results="hide"}
+png(filename = "figures/plot5.png")
 ggplot(steps.pattern.week, 
        aes(nb.min/60, avg.steps, col = day.type)) +
     geom_line() +
     labs(x = "Hours of the day", y = "Average number of steps",
          title = 'Average daily activity pattern, weekdays vs weekends')
+dev.off()
 ```
+
+![*Figure 5: Steps pattern in a day - Comparison between week days and week-ends*](figures/plot5.png) 
 
 We can see that on week days, steps increase earlier than on weekends. But after, during the days, there are more steps on weekends days.
